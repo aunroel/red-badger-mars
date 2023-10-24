@@ -48,7 +48,7 @@ public class InputParser {
                 if (line.isEmpty()) {
                     continue;
                 }
-                lines.add(line);
+                lines.add(line.trim());
             }
         } catch (Exception e) {
             throw new RuntimeException("Error reading input", e);
@@ -83,7 +83,7 @@ public class InputParser {
                                         .formatted(xCord, yCord, grid.getUpperRightX(), grid.getUpperRightY())
                         );
                     }
-                    final Orientation orientation = Orientation.valueOf(robotInput[2]);
+                    final Orientation orientation = Orientation.fromString(robotInput[2]);
                     currentRobot = new MarsRobot(xCord, yCord, orientation);
                     robots.put(currentRobot, new ArrayList<>());
                     inputType = InputType.INSTRUCTION;
@@ -91,7 +91,7 @@ public class InputParser {
                 case INSTRUCTION:
                     final AbstractRobot finalCurrentRobot = currentRobot;
                     Stream.of(line.split(""))
-                            .map(Command::valueOf)
+                            .map(Command::fromString)
                             .forEach(command -> robots.get(finalCurrentRobot).add(command));
                     inputType = InputType.ROBOT;
                     currentRobot = null;
@@ -127,7 +127,7 @@ public class InputParser {
                 .collect(Collectors.toSet());
 
         Stream.of(line.split(""))
-                .filter(c -> !validInstructions.contains(c))
+                .filter(c -> !validInstructions.contains(c.toUpperCase(Locale.ROOT)))
                 .findFirst()
                 .ifPresentOrElse(
                         unknown -> {
@@ -148,7 +148,7 @@ public class InputParser {
             int y = Integer.parseInt(input[1]);
             validateInputPositionRange(x, y, "robot");
 
-            final String direction = input[2];
+            final String direction = input[2].toUpperCase(Locale.ROOT);
             final String validDirections = Stream.of(Orientation.values())
                     .map(Orientation::getOrientation)
                     .collect(Collectors.joining(""));
