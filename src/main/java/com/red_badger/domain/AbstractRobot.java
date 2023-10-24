@@ -1,14 +1,12 @@
 package com.red_badger.domain;
 
 import com.red_badger.enums.Orientation;
-import lombok.Builder;
 import lombok.Data;
-import lombok.With;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@With
-@Builder(toBuilder = true)
-public class Robot {
+@SuperBuilder(toBuilder = true)
+public abstract class AbstractRobot {
     private int xCord;
     private int yCord;
     private Orientation orientation;
