@@ -1,6 +1,7 @@
 package com.red_badger.domain;
 
 import com.red_badger.enums.Command;
+import com.red_badger.enums.Orientation;
 import com.red_badger.exception.RobotLostException;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -11,7 +12,11 @@ import lombok.experimental.SuperBuilder;
 @ToString(callSuper = true)
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
-public class MarsRobot extends AbstractRobot implements IRobot {
+public class MarsRobot extends AbstractRobot {
+
+    public MarsRobot(final int xCord, final int yCord, final Orientation orientation) {
+        super(xCord, yCord, orientation);
+    }
 
     @Override
     public void turn(final Command command) {
