@@ -53,10 +53,10 @@ have required adding additional logic to extract only "permitted" commands from 
    - This would require additional validation logic and tests.
    - Another way would be pulling them from `env` variable or properties file.
 
-4) have also considered storing commands inside `Robot` class. This would have allowed to remove the need for 
+4) I have also considered storing commands inside `Robot` class. This would have allowed to remove the need for 
 using a `Map<AbstractRobot, List<Command>>`. 
    - In the end, I've decided to keep the logic of the commands separate from the `Robot` class.
-   - The only reason being: I thought that "in the real" world scenario - if the robot isn't lost on Mars, we NASA would
+   - The only reason being: I thought that "in the real" world scenario - if the robot isn't lost on Mars, NASA would
      want to send additional commands to it. :)
 
 ## Disclaimer
