@@ -27,6 +27,8 @@ public class InputParser {
     public static final String ROBOT_INSTRUCTION_SIZE_ERROR = "Robot instruction must have 3 parts, provided = '%s'";
     public static final String MINIMAL_INSTRUCTION_ERROR = "Provide grid size, robot position and instructions";
     public static final String UNKNOWN_INSTRUCTION_ERROR = "Unknown instruction: '%s'. Instruction must be one of %s";
+    public static final String INSTRUCTION_SIZE_ERROR = "Instructions must be less than %d characters, provided - '%d' (%s)";
+    public static final int MAX_INSTRUCTION_SIZE = 100;
 
     @Getter(AccessLevel.PROTECTED)
     @Setter(AccessLevel.PROTECTED)
@@ -122,6 +124,9 @@ public class InputParser {
     }
 
     protected void validateInstructionInput(final String line) {
+        if (line.length() > MAX_INSTRUCTION_SIZE) {
+            throw new InvalidInputException(INSTRUCTION_SIZE_ERROR.formatted(MAX_INSTRUCTION_SIZE, line.length(), line));
+        }
         final var validInstructions = Stream.of(Command.values())
                 .map(Command::getCommand)
                 .collect(Collectors.toSet());

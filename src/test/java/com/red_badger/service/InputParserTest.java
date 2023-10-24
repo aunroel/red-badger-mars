@@ -194,6 +194,7 @@ class InputParserTest {
 
     private static Stream<Arguments> invalidInstructionInput() {
         return Stream.of(
+                Arguments.of("R".repeat(120), INSTRUCTION_SIZE_ERROR.formatted(MAX_INSTRUCTION_SIZE, 120, "R".repeat(120))),
                 Arguments.of("A", UNKNOWN_INSTRUCTION_ERROR.formatted("A", Arrays.toString(Command.values()))),
                 Arguments.of("L R", UNKNOWN_INSTRUCTION_ERROR.formatted(" ", Arrays.toString(Command.values())))
         );
