@@ -43,7 +43,7 @@ public class Grid {
         }
     }
 
-    public boolean isPositionWithinBounds(final int xCord, final int yCord) {
+    public boolean isValidPosition(final int xCord, final int yCord) {
         return xCord >= MIN_VALUE && xCord <= upperRightX && yCord >= MIN_VALUE && yCord <= upperRightY;
     }
 
