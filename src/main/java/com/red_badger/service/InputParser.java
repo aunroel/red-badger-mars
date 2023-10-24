@@ -19,7 +19,14 @@ import java.util.stream.Stream;
 
 public class InputParser {
 
-    private final BufferedReader bufferedReader;
+    public static final String GRID_SIZE_NUMERIC_ERROR = "Grid size must be numeric, provided = '%s'";
+    public static final String INVALID_COORDINATES_ERROR = "Invalid %s coordinates: %d %d. Position must be within ranges %d-%d";
+    public static final String GRID_SIZE_ERROR = "Grid size must have 2 parts, provided = '%s'";
+    public static final String ROBOT_POSITION_NUMBER_ERROR = "Robot position must be a number. ";
+    public static final String ROBOT_ORIENTATION_ERROR = "Invalid robot orientation: %s. Orientation must be one of %s";
+    public static final String ROBOT_INSTRUCTION_SIZE_ERROR = "Robot instruction must have 3 parts, provided = '%s'";
+    public static final String MINIMAL_INSTRUCTION_ERROR = "Provide grid size, robot position and instructions";
+    public static final String UNKNOWN_INSTRUCTION_ERROR = "Unknown instruction: '%s'. Instruction must be one of %s";
 
     @Getter(AccessLevel.PROTECTED)
     @Setter(AccessLevel.PROTECTED)
@@ -29,14 +36,14 @@ public class InputParser {
     }
 
     public InputParser() {
-        this.bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         inputType = InputType.GRID;
     }
 
     public Configuration parseInput() {
-        List<String> lines = new ArrayList<>();
+        final List<String> lines = new ArrayList<>();
         String line;
-        try {
+
+        try (var bufferedReader = new BufferedReader(new InputStreamReader(System.in))) {
             while((line = bufferedReader.readLine()) != null) {
                 if (line.isEmpty()) {
                     continue;
@@ -45,28 +52,18 @@ public class InputParser {
             }
         } catch (Exception e) {
             throw new RuntimeException("Error reading input", e);
-        } finally {
-            try {
-                bufferedReader.close();
-            } catch (Exception e) {
-                throw new RuntimeException("Error closing input stream", e);
-            }
         }
 
         validateInput(lines);
-        final var noEmptyLines = lines.stream()
-                .filter(l -> !l.isEmpty())
-                .toList();
-
-        inputType = InputType.GRID;
-        return parseConfiguration(noEmptyLines);
+        return parseConfiguration(lines);
     }
 
     protected Configuration parseConfiguration(final List<String> lines) {
         Grid grid = null;
         AbstractRobot currentRobot = null;
-
         Map<AbstractRobot, List<Command>> robots = new LinkedHashMap<>();
+
+        inputType = InputType.GRID;
         for (String line : lines) {
             switch (inputType) {
                 case GRID:
@@ -80,7 +77,7 @@ public class InputParser {
                     final int yCord = Integer.parseInt(robotInput[1]);
 
                     // safe to ignore warning as grid is always initialised before robot
-                    if (grid.isValidPosition(xCord, yCord)) {
+                    if (!grid.isValidPosition(xCord, yCord)) {
                         throw new InvalidInputException(
                                 "Robot position is outside of grid: %d %d. Position must be within ranges %d-%d"
                                         .formatted(xCord, yCord, grid.getUpperRightX(), grid.getUpperRightY())
@@ -106,6 +103,9 @@ public class InputParser {
     }
 
     protected void validateInput(final List<String> input) throws InvalidInputException {
+        if (input.size() < 3) {
+            throw new InvalidInputException(MINIMAL_INSTRUCTION_ERROR);
+        }
         for (String line : input) {
             switch (inputType) {
                 case GRID:
@@ -122,9 +122,6 @@ public class InputParser {
     }
 
     protected void validateInstructionInput(final String line) {
-        if (line.isEmpty()) {
-            throw new InvalidInputException("Instruction cannot be empty");
-        }
         final var validInstructions = Stream.of(Command.values())
                 .map(Command::getCommand)
                 .collect(Collectors.toSet());
@@ -134,7 +131,7 @@ public class InputParser {
                 .findFirst()
                 .ifPresentOrElse(
                         unknown -> {
-                            throw new InvalidInputException("Unknown instruction: '%s'. Instruction must be one of %s".formatted(unknown, Arrays.toString(Command.values())));
+                            throw new InvalidInputException(UNKNOWN_INSTRUCTION_ERROR.formatted(unknown, Arrays.toString(Command.values())));
                         },
                         () -> inputType = InputType.ROBOT
                 );
@@ -143,7 +140,7 @@ public class InputParser {
     protected void validateRobotInput(final String line) {
         final String[] input = line.split(" ");
         if (input.length != 3) {
-            throw new InvalidInputException("Robot instruction must have 3 parts, provided = '" + line + "'");
+            throw new InvalidInputException(ROBOT_INSTRUCTION_SIZE_ERROR.formatted(line));
         }
 
         try {
@@ -157,27 +154,25 @@ public class InputParser {
                     .collect(Collectors.joining(""));
 
             if (!direction.matches("[" + validDirections + "]")) {
-                throw new InvalidInputException("Invalid robot orientation: %s. Orientation must be one of %s".formatted(direction, Arrays.toString(Orientation.values())));
+                throw new InvalidInputException(ROBOT_ORIENTATION_ERROR.formatted(direction, Arrays.toString(Orientation.values())));
             }
 
             inputType = InputType.INSTRUCTION;
         } catch (NumberFormatException e) {
-            throw new InvalidInputException("Robot position must be a number. " + e.getMessage());
+            throw new InvalidInputException(ROBOT_POSITION_NUMBER_ERROR + e.getMessage());
         }
     }
 
     private static void validateInputPositionRange(int x, int y, String type) {
         if (x < Grid.MIN_VALUE || y < Grid.MIN_VALUE || x > Grid.MAX_VALUE || y > Grid.MAX_VALUE) {
-            throw new InvalidInputException("Invalid %s coordinates: %d %d. Position must be within ranges %d-%d"
-                    .formatted(type, x, y, Grid.MIN_VALUE, Grid.MAX_VALUE)
-            );
+            throw new InvalidInputException(INVALID_COORDINATES_ERROR.formatted(type, x, y, Grid.MIN_VALUE, Grid.MAX_VALUE));
         }
     }
 
     protected void validateGridInput(final String line) {
         final String[] input = line.split(" ");
         if (input.length != 2) {
-            throw new InvalidInputException("Grid size must have 2 parts, provided = '" + line + "'");
+            throw new InvalidInputException(GRID_SIZE_ERROR.formatted(line));
         }
         try {
             int x = Integer.parseInt(input[0]);
@@ -186,7 +181,7 @@ public class InputParser {
 
             inputType = InputType.ROBOT;
         } catch (NumberFormatException e) {
-            throw new InvalidInputException("Grid size must be numeric, provided = '" + line + "'");
+            throw new InvalidInputException(GRID_SIZE_NUMERIC_ERROR.formatted(line));
         }
 
     }
